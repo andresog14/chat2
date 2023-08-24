@@ -7,6 +7,11 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
+// Agrega esta ruta para servir socket.io.js
+app.get('/socket.io/socket.io.js', (req, res) => {
+  res.sendFile(__dirname + '/node_modules/socket.io/client-dist/socket.io.js');
+});
+
 io.on('connection', (socket) => {
   console.log('A user connected');
 
@@ -20,5 +25,7 @@ io.on('connection', (socket) => {
   });
 });
 
-http.listen(process.env.PORT || 3000) 
+http.listen(process.env.PORT || 3000, () => {
   console.log('Server listening on port', process.env.PORT || 3000);
+});
+
