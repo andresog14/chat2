@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat con Stickers y Socket.io</title>
+    <meta charset="UTF-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&family=Noto+Emoji:wght@300;400&display=swap" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const closeButtons = document.querySelectorAll(".close-button");
+            const popupContainers = document.querySelectorAll(".popup");
+
+            closeButtons.forEach((button) => {
+                button.addEventListener("click", function() {
+                    popupContainers.forEach((container) => {
+                        container.style.display = "none";
+                    });
+                });
+            });
+
+            // Resto del código JavaScript
+            // ... (código JavaScript) ...
+        });
+    </script>
+    <style>
+        /* Estilos para el chat */
+        #chat-container {
+            width: 300px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f8f8f8;
+            position: relative;
+        }
+
+        #chat-messages {
+            height: 200px;
+            overflow: auto;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #fff;
+        }
+
+        /* Estilos para ocultar la barra de desplazamiento */
+        #chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #chat-messages::-webkit-scrollbar-thumb {
+            background-color: transparent;
+        }
+
+        #chat-messages::-webkit-scrollbar-track {
+            background-color: transparent;
+        }
+
+        #chat-messages::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        #chat-messages::-webkit-scrollbar-track:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        /* Estilos para el resto de elementos */
+        #message-input {
+            width: 80%;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        #send-button {
+            padding: 5px 10px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        #emoticon-button {
+            font-size: 20px;
+            margin-right: 5px;
+            cursor: pointer;
+            background-color: white;
+            border: none;
+        }
+
+        .popup {
+            display: none;
+            position: absolute;
+            bottom: 45px;
+            right: 0;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            padding: 10px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        .emoticon-popup {
+            font-size: 20px;
+            margin-right: 5px;
+            cursor: pointer;
+            background-color: white;
+            border: none;
+        }
+
+        .message {
+            margin: 5px 0;
+        }
+
+        .message .content {
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        .popup-button {
+            font-size: 20px;
+            margin-right: 5px;
+            cursor: pointer;
+            background-color: white;
+            border: none;
+        }
+
+        .sticker-popup {
+            display: none;
+            position: absolute;
+            bottom: 45px;
+            right: 0;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            width: 200px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        .sticker {
+            background-color: transparent;
+            width: 24%;
+            height: auto;
+            margin-bottom: 5px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .chat-sticker {
+            width: 40%;
+            height: auto;
+        }
+
+        img.sticker-img {
+            width: 100%;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            border: none;
+            background-color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="chat-messages"></div>
+        <input type="text" id="name-input" placeholder="Ingresa tu nombre">
+        <div>
+            <button id="emoticon-button">😄</button>
+            <button class="popup-button" id="sticker-button">🌟</button>
+            <div id="emoticon-popup" class="popup">
+                <button class="close-button">×</button>
+                <button class="emoticon-popup">🐢</button>
+                <button class="emoticon-popup">😞</button>
+                <button class="emoticon-popup">😄</button>
+                <button class="emoticon-popup">😉</button>
+                
+            </div>
+            <div id="sticker-popup" class="popup">
+                <button class="sticker">
+                    <img src="https://media.giphy.com/media/PXJhC8MYxFmRRl7kB2/giphy.gif" alt="Sticker 1" class="sticker-img">
+                </button>
+                <button class="sticker">
+                    <img src="https://media.giphy.com/media/R6gvnAxj2ISzJdbA63/giphy.gif" alt="Sticker 2" class="sticker-img">
+                </button>
+                <button class="sticker">
+                    <img src="https://media.giphy.com/media/MVDPX3gaKFPuo/giphy.gif" alt="Sticker 3" class="sticker-img">
+                </button>
+                <button class="close-button">×</button>
+            </div>
+        </div>
+        <input type="text" id="message-input" placeholder="Escribe un mensaje...">
+        <div> <button id="send-button">Enviar</button></div>
+    </div>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const messagesDiv = document.getElementById("chat-messages");
+            const nameInput = document.getElementById("name-input");
+            const messageInput = document.getElementById("message-input");
+            const sendButton = document.getElementById("send-button");
+            const emoticonButton = document.getElementById("emoticon-button");
+            const stickerButton = document.getElementById("sticker-button");
+            const emoticonPopup = document.getElementById("emoticon-popup");
+            const stickerPopup = document.getElementById("sticker-popup");
+
+            let currentName = "";
+            let isFirstMessage = true;
+            const socket = io();
+
+            nameInput.addEventListener("change", function(event) {
+                currentName = event.target.value;
+            });
+
+            sendButton.addEventListener("click", function() {
+                const messageText = messageInput.value;
+                if (isFirstMessage) {
+                    if (currentName.trim() === "") {
+                        alert("Por favor, ingresa tu nombre antes de enviar un mensaje.");
+                        return;
+                    }
+                    nameInput.disabled = true;
+                    isFirstMessage = false;
+                }
+                if (messageText.trim() === "") {
+                    return;
+                }
+                sendMessage(currentName, messageText);
+            });
+
+            emoticonButton.addEventListener("click", function() {
+                emoticonPopup.style.display = "block";
+                stickerPopup.style.display = "none";
+            });
+
+            stickerButton.addEventListener("click", function() {
+                if (currentName.trim() === "") {
+                    alert("Por favor, ingresa tu nombre antes de enviar un sticker.");
+                    return;
+                }
+                stickerPopup.style.display = "block";
+                emoticonPopup.style.display = "none";
+            });
+
+            emoticonPopup.addEventListener("click", function(event) {
+                if (event.target.classList.contains("emoticon-popup")) {
+                    const selectedEmoticon = event.target.textContent;
+                    messageInput.value += selectedEmoticon;
+                    emoticonPopup.style.display = "none";
+                }
+            });
+
+            stickerPopup.addEventListener("click", function(event) {
+                const selectedSticker = event.target.closest(".sticker");
+                if (selectedSticker) {
+                    const selectedImg = selectedSticker.querySelector(".sticker-img");
+                    const selectedSrc = selectedImg.getAttribute("src");
+                    sendMessage(currentName, `<img src="${selectedSrc}" alt="Sticker" class="chat-sticker">`);
+                    stickerPopup.style.display = "none";
+                }
+            });
+
+            function sendMessage(name, content) {
+                const messageText = content.trim();
+                if (messageText === "") {
+                    return;
+                }
+
+                const messageData = {
+                    name: name,
+                    message: messageText
+                };
+                socket.emit('message', messageData);
+                messageInput.value = "";
+            }
+
+            messageInput.addEventListener("keydown", function(event) {
+                if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    sendButton.click();
+                }
+            });
+
+            socket.on('message', (data) => {
+                const messageElement = document.createElement("div");
+                messageElement.classList.add("message");
+                const nameElement = document.createElement("strong");
+                nameElement.textContent = data.name + ": ";
+                messageElement.appendChild(nameElement);
+
+                const contentNode = document.createElement("span");
+                contentNode.classList.add("content");
+                contentNode.innerHTML = data.message;
+                messageElement.appendChild(contentNode);
+
+                messagesDiv.appendChild(messageElement);
+
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            });
+        });
+    </script>
+</body>
+</html>
